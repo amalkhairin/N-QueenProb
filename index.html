@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>6-Queen Problem</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="assets/css/style.css">
+    <script src="main.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+</head>
+<body class="bg-custom">
+    <nav>
+        <!-- navbar of page -->
+        <div class="navbar bg-dark-custom">
+            <p class="navbar-brand">N-Queen Algorithm</p>
+        </div>
+    </nav>
+    <main>
+        <div class="container-fluid">
+            <div class="row justify-content-around">
+                <div class="col-md-auto">
+                    <div class="row justify-content-between label-style">
+                        <!-- board header -->
+                        <div class="label-sim">SIMULATION</div>
+                        <button id="btn-reset" class="btn btn-sm btn-style-primary">RESET</button>
+                    </div>
+                    <div class="box-board">
+                        <!-- solved part -->
+                        <div class="solved">
+                            <div id="board">
+                            </div>
+                            <br>
+                            <!-- button to check other solutions -->
+                            <div id="btn-controller" class="row justify-content-around">
+                                <button id="next" class="btn btn-primary btn-sm text-right">ANOTHER SOLUTION</button>
+                            </div>
+                        </div>
+                        <!-- no-solution part -->
+                        <div class="no-solution">
+                            <div id="board">
+                                <!-- sum of solution -->
+                                <div id="sum"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-auto">
+                    <div class="row justify-content-between label-style">
+                        <!-- log header -->
+                        <div class="label-sim">LOG</div>
+                        <button id="btn-clear" class="btn btn-sm btn-style-primary">clear</button>
+                    </div>
+                    <!-- log board -->
+                    <div id="log-board" class="log-board p-3">
+                     
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+    <script>
+        $(document).ready(function(){
+
+            //initial var
+            //n queen
+            var n = 0;
+            var index_solution = 0;
+            var col = [];
+            var isPlacedAll = false;
+            var solved = false;
+            var solutions = [];
+            var k = 0;
+
+            //backtracking algorithm
+            function putTheQueens(i) {
+                if (isSafePosition(i)) {
+                    if (i == n) {
+                        solutions[k] = [...col];
+                        k++;
+                        return true;
+                    } else {
+                        for (var j = 1; j <= n; j++) {
+                            col[i + 1] = j;
+                            isPlacedAll = putTheQueens(i + 1);
+                        }
+                    }
+                }
+                if (isPlacedAll) {
+                    return true;
+                }
+                return false;
+            }
+
+            //check for safe positions, horizontal/vertical/diagonals
+            function isSafePosition(q) {
+                for (var i = 1; i < q; i++) {
+                    if ((col[q] == col[i])) {
+                        return false;
+                    }
+                    if ((Math.abs(col[q] - col[i]) == Math.abs(q - i))) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+
+
+
+
+            //interface main
+            //generate chessboard pattern for a row
+            function basePattern(n) {
+                var pattern = [];
+                var j = 1;
+                for (var i = 0; i < n; i++) {
+                    if (j % 2 == 0) {
+                        pattern[i] = "black";
+                    } else {
+                        pattern[i] = "white";
+                    }
+                    j++;
+                }
+                return pattern;
+            }
+
+            //generating chessboard pattern for next row
+            function nextPattern(n, pattern) {
+                var newPattern = [];
+                var j = 1;
+                for (var i = 0; i < n; i++) {
+                    if (pattern[0] == "white") {
+                        if (j % 2 == 0) {
+                            newPattern[i] = "white";
+                        } else {
+                            newPattern[i] = "black";
+                        }
+                    } else {
+                        if (j % 2 == 0) {
+                            newPattern[i] = "black";
+                        } else {
+                            newPattern[i] = "white";
+                        }
+                    }
+                    j++;
+                }
+                return newPattern;
+            }
+
+            //generate/draw chessboard. n = total queen, solutions = list of solution, input = index of solution
+            function draw2(n, solutions, input) {
+                //text on chessboard
+                document.getElementById("board").innerHTML = "<div id='sum'></div>";
+                document.getElementById("sum").innerHTML += "<div><p class='sum'>total: " + solutions.length + " solutions</p></div>"
+                document.getElementById("board").innerHTML += "<div><br><b>Solution "+(input+1)+"</b></div>"
+                if (!solved) {
+                    //clear solutions if not solved
+                    solutions = [];
+                }
+                //create chessboard pattern
+                var pattern = basePattern(n);
+                //re-clean solutions array from undefined object 
+                for (var i = 0; i < solutions.length; i++) {
+                    solutions[i] = solutions[i].filter(a => a);
+                }
+                //create matrix board
+                board = [];
+                //generate pattern for board
+                for (var j = 0; j < solutions[input].length; j++) {
+                    board[j] = pattern;
+                    pattern = nextPattern(n, pattern);
+                }
+                //insert queen position to matrix board
+                for (var j = 0; j < solutions[input].length; j++) {
+                    var index = solutions[input][j];
+                    board[j][index - 1] += " q";
+                }
+                //create interface of board
+                for (var i = 0; i < board.length; i++) {
+                    for (var j = 0; j < board[i].length; j++) {
+                        if (board[i][j].includes("white")) {
+                            if (board[i][j].includes("q")) {
+                                document.getElementById("board").innerHTML += "<div class='square' style='background-color: #F8F8F8;'><image src='assets/img/queen.png' class='queen p-3'></image></div>";
+                            } else {
+                                document.getElementById("board").innerHTML += "<div class='square' style='background-color: #F8F8F8;'></div>";
+                            }
+                        } else {
+                            if (board[i][j].includes("q")) {
+                                document.getElementById("board").innerHTML += "<div class='square' style='background-color: #D3D3D3;'><image src='assets/img/queen.png' class='queen p-3'></image></div>";
+                            } else {
+                                document.getElementById("board").innerHTML += "<div class='square' style='background-color: #D3D3D3;'></div>";
+                            }
+                        }
+                    }
+                    document.getElementById("board").innerHTML += "<br>";
+                }
+            }
+
+            //generate log of activities.  n = total queen, solutions = list of solution, input = index of solution
+            function logger(n,solution,input){
+                //generate initial log
+                document.getElementById("log-board").innerHTML += "<div class='logger'><p></p></div>";
+                document.getElementById("log-board").innerHTML += "<div class='logger'>N = "+n+"</div>";
+                document.getElementById("log-board").innerHTML += "<div class='logger'>solutions = " + solution.length + "</div>";
+                //create variabel arr to save solution to a string
+                var arr = "";
+                //re-clean the array of solutions from undefined object
+                for (var i = 0; i < solutions.length; i++) {
+                    solutions[i] = solutions[i].filter(a => a);
+                }
+                //insert solution[index] to arr
+                for(var i = 0; i < solution[input].length; i++){
+                    arr += solution[input][i]+",";
+                }
+                //generate log for solution[index]
+                document.getElementById("log-board").innerHTML += "<div class='logger'><p></p></div>";
+                document.getElementById("log-board").innerHTML += "<div class='logger'>solution-"+(input+1)+"</div>";
+                document.getElementById("log-board").innerHTML += "<div class='logger'>queen = [" + arr + "]</div>";
+            }
+
+
+            //main
+            $(".no-solution").hide();
+            $("#btn-controller").hide();
+            //check if input != 0
+            while(n == 0){
+                n = window.prompt("input N value.  example: 4");
+            }
+            //put the queen
+            solved = putTheQueens(0);
+            //check if have solutions, then draw solution interface
+            if(solved){
+                $(".no-solution").hide();
+                $(".solved").show();
+                //if solution less than equal 1
+                if(n <= 1){
+                    $("#btn-controller").hide();
+                } else {
+                    $("#btn-controller").show();
+                }
+                //generate log and board interface
+                logger(n, solutions, index_solution);
+                draw2(n, solutions, index_solution);
+            } else {
+                $(".no-solution").show();
+                $(".no-solution").append("<div>total: "+solutions.length+" solution</div>");
+                $(".no-solution").append("<div>No available solutions</div>");
+                $(".solved").hide();
+            }
+
+            //if "another solutions" button are clicked,
+            $("#next").click(function(){
+                //clear the board
+                document.getElementById("board").innerHTML = "";
+                //increase the index_solution value
+                index_solution++;
+                //check if index_solution is between 0..solution.length
+                if(index_solution >= solutions.length){
+                    index_solution = 0;
+                }
+                if(index_solution < 0){
+                    index_solution = solutions.length-1;
+                }
+                //re-generate log and board interface for other solutions
+                logger(n,solutions,index_solution);
+                draw2(n,solutions,index_solution);
+            });
+
+            //if reset button are clicked, then reload the page
+            $("#btn-reset").click(function(){
+                location.reload();
+            })
+
+            //if clear button are clicked, then clear the log
+            $("#btn-clear").click(function(){
+                document.getElementById("log-board").innerHTML = "";
+            })
+        });
+
+    </script>
+</body>
+</html>
